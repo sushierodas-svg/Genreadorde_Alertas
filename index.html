@@ -71,10 +71,20 @@
                 <label class="block text-sm font-bold mb-1">2. Grado</label>
                 <select id="in-grade" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" onchange="updatePreview('grade', this.value)">
                     <option value="" disabled selected>Selecciona un grado...</option>
-                    <option value="Primaria">Primaria</option>
-                    <option value="Básicos">Básicos</option>
-                    <option value="4to. Bachillerato">4to. Bachillerato</option>
-                    <option value="5to. Bachillerato">5to. Bachillerato</option>
+                    <optgroup label="Primaria">
+                        <option value="4to. Primaria">4to. Primaria</option>
+                        <option value="5to. Primaria">5to. Primaria</option>
+                        <option value="6to. Primaria">6to. Primaria</option>
+                    </optgroup>
+                    <optgroup label="Básicos">
+                        <option value="1ro. Básico">1ro. Básico</option>
+                        <option value="2do. Básico">2do. Básico</option>
+                        <option value="3ro. Básico">3ro. Básico</option>
+                    </optgroup>
+                    <optgroup label="Bachillerato">
+                        <option value="4to. Bachillerato">4to. Bachillerato</option>
+                        <option value="5to. Bachillerato">5to. Bachillerato</option>
+                    </optgroup>
                 </select>
             </div>
 
@@ -156,16 +166,14 @@
                     <h2 class="text-sm font-bold tracking-widest uppercase mb-1" id="alert-subtitle" style="color: rgba(0,0,0,0.6)">Aviso Importante</h2>
                     <h1 class="text-3xl font-bold text-brand-blue" id="alert-title">Alerta Preventiva</h1>
                 </div>
-            </div>
-
-            <!-- Mascota Owlaris Integrada de forma automática -->
-            <div class="absolute top-10 right-6 w-44 h-44 z-10 drop-shadow-2xl">
-                <img id="out-mascot" src="Untitled design.png" class="w-full h-full object-contain" alt="Mascota Escolaris">
+                <div class="text-5xl drop-shadow-sm transition-transform duration-300" id="alert-emoji">
+                    ⚠️
+                </div>
             </div>
 
             <!-- Cuerpo del mensaje -->
             <div class="p-8 relative z-0">
-                <div class="pr-36">
+                <div>
                     <p class="text-xl text-brand-blue mb-4">Hola <strong id="out-student">[Nombre del Estudiante]</strong>,</p>
                     
                     <p class="text-base text-gray-700 mb-6 leading-relaxed">
@@ -260,6 +268,7 @@
             const alertTitle = document.getElementById('alert-title');
             const alertSubtitle = document.getElementById('alert-subtitle');
             const alertMessage = document.getElementById('alert-message');
+            const alertEmoji = document.getElementById('alert-emoji');
 
             if (level === 'yellow') {
                 // Estilos Botones
@@ -271,6 +280,7 @@
                 alertTitle.innerText = "Alerta Preventiva";
                 alertTitle.style.color = "#244b5a"; // brand-blue
                 alertSubtitle.style.color = "rgba(0,0,0,0.6)";
+                alertEmoji.innerText = '⚠️';
                 
                 alertMessage.className = "mt-2 p-3 bg-orange-50 rounded-lg";
                 alertMessage.innerHTML = '<p class="text-brand-orange font-semibold m-0 text-sm">💡 Aún estás a tiempo de ponerte al día. ¡Tú puedes lograrlo, organiza tu tiempo!</p>';
@@ -285,6 +295,7 @@
                 alertTitle.innerText = "Alerta de Riesgo";
                 alertTitle.style.color = "#ffffff";
                 alertSubtitle.style.color = "rgba(255,255,255,0.8)";
+                alertEmoji.innerText = '🚨';
                 
                 alertMessage.className = "mt-2 p-3 bg-red-50 border border-brand-red rounded-lg";
                 alertMessage.innerHTML = '<p class="text-brand-red font-bold m-0 text-sm">⚠️ Es urgente que te pongas al día. Te encuentras en riesgo de perder el curso. ¡Actúa ahora!</p>';
