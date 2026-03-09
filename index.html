@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Alertas Académicas - Escolaris</title>
+    <!-- Tailwind CSS para los estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2canvas para convertir HTML a PNG -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Configuración de identidad visual -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#db6015',
+                            yellow: '#f7be00',
+                            blue: '#244b5a',
+                            red: '#993921',
+                            light: '#f0f8ff',
+                            white: '#ffffff'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos base para asegurar que la exportación sea limpia */
+        body { background-color: #f3f4f6; }
+        .preview-container {
+            width: 650px;
+            min-width: 650px;
+        }
+        /* Ocultar barra de scroll en el preview si existiera */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="font-sans text-brand-blue min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8 justify-center items-start">
+
+    <!-- PANEL DE CONTROL (Formulario) -->
+    <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md border-t-4 border-brand-orange">
+        <h1 class="text-2xl font-bold mb-1 text-brand-blue">Generador de Alertas</h1>
+        <p class="text-sm text-gray-500 mb-6">Completa los datos para generar la imagen.</p>
+
+        <!-- Selector de Tipo de Alerta -->
+        <div class="flex gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
+            <button id="btn-yellow" onclick="setAlertLevel('yellow')" class="flex-1 py-2 rounded-md font-bold transition-all bg-brand-yellow text-brand-blue shadow-sm">
+                🟡 Alerta Amarilla
+            </button>
+            <button id="btn-red" onclick="setAlertLevel('red')" class="flex-1 py-2 rounded-md font-bold transition-all text-gray-500 hover:bg-gray-200">
+                🔴 Alerta Roja
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <!-- Cargar Mascota -->
+            <div>
+                <label class="block text-sm font-bold mb-1">1. Cargar Mascota (Owlaris)</label>
+                <input type="file" id="mascotUpload" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-light file:text-brand-blue hover:file:bg-blue-100 cursor-pointer" onchange="loadMascot(event)">
+                <p class="text-xs text-gray-400 mt-1">Sube la imagen de la mascota para usarla en el diseño.</p>
+            </div>
+
+            <!-- Estudiante -->
+            <div>
+                <label class="block text-sm font-bold mb-1">2. Nombre del Estudiante</label>
+                <input type="text" id="in-student" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. Juan Pérez" oninput="updatePreview('student', this.value)">
+            </div>
+
+            <!-- Curso -->
+            <div>
+                <label class="block text-sm font-bold mb-1">3. Curso</label>
+                <select id="in-course" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" onchange="updatePreview('course', this.value)">
+                    <option value="" disabled selected>Selecciona un curso...</option>
+                    <optgroup label="Área de Ciencias">
+                        <option value="Matemática">Matemática</option>
+                        <option value="Ciencias Naturales y Tecnología">Ciencias Naturales y Tecnología</option>
+                        <option value="Ciencias Naturales">Ciencias Naturales</option>
+                        <option value="Biología">Biología</option>
+                        <option value="Química">Química</option>
+                        <option value="Física">Física</option>
+                        <option value="Estadística">Estadística</option>
+                    </optgroup>
+                    <optgroup label="Área de Lenguaje e Idiomas">
+                        <option value="Comunicación y Lenguaje">Comunicación y Lenguaje</option>
+                        <option value="Lengua y Literatura">Lengua y Literatura</option>
+                        <option value="Idioma Inglés">Idioma Inglés</option>
+                        <option value="Idioma Maya">Idioma Maya</option>
+                    </optgroup>
+                    <optgroup label="Área Social y Humanística">
+                        <option value="Ciencias Sociales">Ciencias Sociales</option>
+                        <option value="Formación Ciudadana">Formación Ciudadana</option>
+                        <option value="Filosofía">Filosofía</option>
+                        <option value="Psicología">Psicología</option>
+                        <option value="Seminario">Seminario</option>
+                    </optgroup>
+                    <optgroup label="Área Técnica y Artística">
+                        <option value="Tecnologías de la Información / TAC">Tecnologías de la Información / TAC</option>
+                        <option value="Productividad y Desarrollo">Productividad y Desarrollo</option>
+                        <option value="Emprendimiento">Emprendimiento</option>
+                        <option value="Gestión de Proyectos">Gestión de Proyectos</option>
+                        <option value="Expresión Artística">Expresión Artística</option>
+                        <option value="Educación Física">Educación Física</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- Lecciones con atraso -->
+            <div>
+                <label class="block text-sm font-bold mb-1">4. Lecciones con atraso</label>
+                <input type="text" id="in-lessons" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. Lección 5 y 6" oninput="updatePreview('lessons', this.value)">
+            </div>
+
+            <!-- Tips / Recomendaciones -->
+            <div>
+                <label class="block text-sm font-bold mb-1">5. Recomendaciones / Tips</label>
+                <textarea id="in-tips" rows="3" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. Te recomiendo revisar los videos de la plataforma y agendar 1 hora diaria..." oninput="updatePreview('tips', this.value)"></textarea>
+            </div>
+
+            <!-- Nombre del Tutor -->
+            <div>
+                <label class="block text-sm font-bold mb-1">6. Nombre del Tutor</label>
+                <input type="text" id="in-tutor" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. Prof. María Rodríguez" oninput="updatePreview('tutor', this.value)">
+            </div>
+        </div>
+
+        <button onclick="downloadImage()" class="w-full mt-6 bg-brand-orange hover:bg-orange-600 text-white font-bold py-3 rounded-lg shadow-md transition-colors flex justify-center items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Descargar como Imagen (PNG)
+        </button>
+    </div>
+
+    <!-- ÁREA DE PREVISUALIZACIÓN -->
+    <div class="flex-col hidden md:flex" style="position: sticky; top: 2rem;">
+        <h2 class="text-lg font-bold mb-2 text-gray-600">Vista Previa</h2>
+        
+        <!-- Contenedor exacto que se capturará como imagen -->
+        <div id="capture-area" class="preview-container bg-brand-light rounded-2xl overflow-hidden shadow-xl border border-gray-200 relative">
+            
+            <!-- Banner Superior (Cambia de color según la alerta) -->
+            <div id="alert-header" class="bg-brand-yellow px-8 py-6 flex items-center justify-between transition-colors duration-300">
+                <div>
+                    <h2 class="text-sm font-bold tracking-widest uppercase mb-1" id="alert-subtitle" style="color: rgba(0,0,0,0.6)">Aviso Importante</h2>
+                    <h1 class="text-3xl font-bold text-brand-blue" id="alert-title">Alerta Preventiva</h1>
+                </div>
+                <!-- Mascota Owlaris -->
+                <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center p-2 backdrop-blur-sm border-2 border-white/30">
+                    <img id="out-mascot" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23244b5a'><path d='M12 2c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-9.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm-2 4.5c-1.66 0-3-1.34-3-3h6c0 1.66-1.34 3-3 3z'/></svg>" class="w-full h-full object-contain" alt="Mascota Escolaris">
+                </div>
+            </div>
+
+            <!-- Cuerpo del mensaje -->
+            <div class="p-8">
+                <p class="text-xl text-brand-blue mb-4">Hola <strong id="out-student">[Nombre del Estudiante]</strong>,</p>
+                
+                <p class="text-base text-gray-700 mb-6 leading-relaxed">
+                    En Escolaris nos preocupamos por tu aprendizaje y queremos que alcances tus metas. Hemos notado un atraso en tu avance académico y queremos apoyarte.
+                </p>
+
+                <!-- Caja de Detalles -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-brand-orange mb-6 flex flex-col gap-3">
+                    <div class="flex items-start">
+                        <span class="font-bold text-brand-blue w-24">Curso:</span>
+                        <span class="text-gray-800 font-semibold text-lg" id="out-course">[Curso Seleccionado]</span>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="font-bold text-brand-blue w-24">Atraso en:</span>
+                        <span class="text-brand-red font-bold" id="out-lessons">[Lecciones indicadas]</span>
+                    </div>
+                    <div class="mt-2 p-3 bg-orange-50 rounded-lg" id="alert-message">
+                        <p class="text-brand-orange font-semibold m-0 text-sm">💡 Aún estás a tiempo de ponerte al día. ¡Tú puedes lograrlo, organiza tu tiempo!</p>
+                    </div>
+                </div>
+
+                <!-- Caja de Tips -->
+                <div class="bg-white rounded-xl p-5 shadow-sm mb-6">
+                    <h3 class="font-bold text-brand-blue mb-2 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-yellow" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                        Recomendaciones de tu tutor:
+                    </h3>
+                    <p class="text-gray-600 text-sm whitespace-pre-wrap italic" id="out-tips">Aquí aparecerán las recomendaciones, estrategias y consejos que el tutor escriba para ayudar al estudiante a superar este reto académico.</p>
+                </div>
+
+                <!-- Footer / Firma -->
+                <div class="flex items-center gap-4 mt-8 pt-4 border-t border-gray-200">
+                    <div class="w-12 h-12 bg-brand-blue rounded-full flex items-center justify-center text-white font-bold text-xl">
+                        E
+                    </div>
+                    <div>
+                        <p class="font-bold text-brand-blue" id="out-tutor">[Nombre del Tutor]</p>
+                        <p class="text-sm text-gray-500">Tutor(a) Académico - Escolaris</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pie de color de marca -->
+            <div class="h-3 w-full flex">
+                <div class="h-full flex-1 bg-brand-blue"></div>
+                <div class="h-full flex-1 bg-brand-orange"></div>
+                <div class="h-full flex-1 bg-brand-yellow"></div>
+                <div class="h-full flex-1 bg-brand-red"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de interactividad -->
+    <script>
+        let currentLevel = 'yellow';
+
+        // Función para cargar la imagen de la mascota y evitar errores de seguridad al descargar
+        function loadMascot(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('out-mascot').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Función para actualizar textos en tiempo real
+        function updatePreview(field, value) {
+            const el = document.getElementById(`out-${field}`);
+            if(el) {
+                // Si está vacío, mostramos un placeholder
+                if(value.trim() === '') {
+                    const placeholders = {
+                        'student': '[Nombre del Estudiante]',
+                        'course': '[Curso Seleccionado]',
+                        'lessons': '[Lecciones indicadas]',
+                        'tips': 'Aquí aparecerán las recomendaciones y consejos del tutor.',
+                        'tutor': '[Nombre del Tutor]'
+                    };
+                    el.innerText = placeholders[field];
+                } else {
+                    el.innerText = value;
+                }
+            }
+        }
+
+        // Función para cambiar de Amarilla a Roja y viceversa
+        function setAlertLevel(level) {
+            currentLevel = level;
+            
+            const btnYellow = document.getElementById('btn-yellow');
+            const btnRed = document.getElementById('btn-red');
+            const alertHeader = document.getElementById('alert-header');
+            const alertTitle = document.getElementById('alert-title');
+            const alertSubtitle = document.getElementById('alert-subtitle');
+            const alertMessage = document.getElementById('alert-message');
+
+            if (level === 'yellow') {
+                // Estilos Botones
+                btnYellow.className = "flex-1 py-2 rounded-md font-bold transition-all bg-brand-yellow text-brand-blue shadow-sm";
+                btnRed.className = "flex-1 py-2 rounded-md font-bold transition-all text-gray-500 hover:bg-gray-200";
+                
+                // Estilos Preview
+                alertHeader.className = "bg-brand-yellow px-8 py-6 flex items-center justify-between transition-colors duration-300";
+                alertTitle.innerText = "Alerta Preventiva";
+                alertTitle.style.color = "#244b5a"; // brand-blue
+                alertSubtitle.style.color = "rgba(0,0,0,0.6)";
+                
+                alertMessage.className = "mt-2 p-3 bg-orange-50 rounded-lg";
+                alertMessage.innerHTML = '<p class="text-brand-orange font-semibold m-0 text-sm">💡 Aún estás a tiempo de ponerte al día. ¡Tú puedes lograrlo, organiza tu tiempo!</p>';
+
+            } else {
+                // Estilos Botones
+                btnRed.className = "flex-1 py-2 rounded-md font-bold transition-all bg-brand-red text-white shadow-sm";
+                btnYellow.className = "flex-1 py-2 rounded-md font-bold transition-all text-gray-500 hover:bg-gray-200";
+                
+                // Estilos Preview
+                alertHeader.className = "bg-brand-red px-8 py-6 flex items-center justify-between transition-colors duration-300";
+                alertTitle.innerText = "Alerta de Riesgo";
+                alertTitle.style.color = "#ffffff";
+                alertSubtitle.style.color = "rgba(255,255,255,0.8)";
+                
+                alertMessage.className = "mt-2 p-3 bg-red-50 border border-brand-red rounded-lg";
+                alertMessage.innerHTML = '<p class="text-brand-red font-bold m-0 text-sm">⚠️ Es urgente que te pongas al día. Te encuentras en riesgo de perder el curso. ¡Actúa ahora!</p>';
+            }
+        }
+
+        // Función para descargar la imagen
+        function downloadImage() {
+            const captureArea = document.getElementById('capture-area');
+            const studentName = document.getElementById('in-student').value.trim() || 'Estudiante';
+            
+            // Usamos html2canvas
+            html2canvas(captureArea, {
+                scale: 2, // Alta resolución
+                useCORS: true, // Permite cargar imágenes si hay cruce de dominios
+                backgroundColor: null // Mantiene esquinas redondeadas si las hubiera
+            }).then(canvas => {
+                // Crear un enlace temporal
+                const link = document.createElement('a');
+                link.download = `Alerta_${currentLevel === 'red' ? 'Roja' : 'Amarilla'}_${studentName.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                alert("Hubo un error al generar la imagen. Asegúrate de que la imagen de la mascota se haya cargado correctamente.");
+                console.error(err);
+            });
+        }
+    </script>
+</body>
+</html>
