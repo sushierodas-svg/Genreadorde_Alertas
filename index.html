@@ -135,10 +135,30 @@
                 <input type="text" id="in-lessons" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. Lección 5 y 6" oninput="updatePreview('lessons', this.value)">
             </div>
 
-            <!-- Tips / Recomendaciones -->
+            <!-- Tips / Mensajes de ánimo -->
             <div>
-                <label class="block text-sm font-bold mb-1">5. Recomendaciones / Tips</label>
-                <textarea id="in-tips" rows="3" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. Te recomiendo revisar los videos de la plataforma y agendar 1 hora diaria..." oninput="updatePreview('tips', this.value)"></textarea>
+                <label class="block text-sm font-bold mb-1">5. Mensaje / Nota del Tutor</label>
+                <!-- Menú de opciones predefinidas -->
+                <select id="in-predefined-tips" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none mb-2 text-sm text-gray-700 bg-gray-50" onchange="setPredefinedTip(this.value)">
+                    <option value="" disabled selected>Elige un consejo, un mensaje de ánimo o escribe el tuyo...</option>
+                    <optgroup label="Mensajes de Ánimo">
+                        <option value="¡No te desanimes! Sé que con un poco más de esfuerzo lograrás ponerte al día. Estoy aquí para apoyarte en tu proceso.">💪 Ánimo: ¡Tú puedes!</option>
+                        <option value="Recuerda que cada pequeño paso cuenta. Organiza tu semana y verás cómo avanzas rápidamente. ¡Confío en tu capacidad!">🌟 Ánimo: Confío en ti</option>
+                        <option value="Es normal encontrar retos en el camino, lo importante es no rendirse. Si necesitas ayuda con algún tema, no dudes en escribirme.">🤝 Ánimo: Estoy para ayudarte</option>
+                        <option value="Un pequeño tropiezo no define tu éxito. Tómate un respiro, revisa tus pendientes y vuelve con más fuerza. ¡Tienes el talento para lograrlo!">🌱 Ánimo: Vuelve con fuerza</option>
+                        <option value="El aprendizaje es un trabajo en equipo. No estás solo en esto; avísame y juntos armaremos un plan para que te pongas al día.">🎯 Ánimo: Hagamos un plan juntos</option>
+                        <option value="¡Toda gran meta requiere perseverancia! Retoma tus lecciones un paso a la vez, no intentes hacer todo en un solo día. ¡Adelante!">🚀 Ánimo: Un paso a la vez</option>
+                        <option value="He notado tu gran potencial en este curso. Aprovecha las herramientas de la plataforma y verás cómo superas este atraso en poco tiempo.">✨ Ánimo: Tienes un gran potencial</option>
+                    </optgroup>
+                    <optgroup label="Recomendaciones de Estudio">
+                        <option value="Te recomiendo dedicar, al menos, 4 horas diarias a avanzar en los contenidos de tus cursos asignados. Organiza tu propio horario y cúmplelo para alcanzar tu meta.">⏱️ Tip: Dedicar 4 horas diarias</option>
+                        <option value="Es fundamental que ingreses todos los días a la plataforma y prestes atención a las orientaciones de cada tema. Esto te permitirá un buen desempeño.">💻 Tip: Ingresar todos los días</option>
+                        <option value="Te sugiero observar los recursos varias veces, elaborar tus propios resúmenes y anotar tus dudas para consultarlas conmigo en nuestras sesiones.">📝 Tip: Revisar recursos y resumir</option>
+                        <option value="Utiliza una agenda para no olvidar la entrega de tus tareas y programar el avance en tus cursos. Con el tiempo verás que es una excelente herramienta.">📅 Tip: Utilizar una agenda</option>
+                    </optgroup>
+                </select>
+                <!-- Área de texto (editable) -->
+                <textarea id="in-tips" rows="3" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. ¡Hola! He notado que te has atrasado un poco, pero sé que puedes recuperarte..." oninput="updatePreview('tips', this.value)"></textarea>
             </div>
 
             <!-- Nombre del Tutor -->
@@ -176,6 +196,11 @@
 
             <!-- Cuerpo del mensaje -->
             <div class="p-8 relative z-0">
+                <!-- Fecha de generación automática -->
+                <div class="text-right mb-2">
+                    <span class="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full" id="out-date">Fecha actual</span>
+                </div>
+
                 <div>
                     <p class="text-xl text-brand-blue mb-4">Hola <strong id="out-student">[Nombre del Estudiante]</strong>,</p>
                     
@@ -203,15 +228,15 @@
                     </div>
                 </div>
 
-                <!-- Caja de Tips -->
+                <!-- Caja de Tips / Mensaje -->
                 <div class="bg-white rounded-xl p-5 shadow-sm mb-6">
                     <h3 class="font-bold text-brand-blue mb-2 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-yellow" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                         </svg>
-                        Recomendaciones de tu tutor:
+                        Mensaje de tu tutor:
                     </h3>
-                    <p class="text-gray-600 text-sm whitespace-pre-wrap italic" id="out-tips">Aquí aparecerán las recomendaciones, estrategias y consejos que el tutor escriba para ayudar al estudiante a superar este reto académico.</p>
+                    <p class="text-gray-600 text-sm whitespace-pre-wrap italic" id="out-tips">Aquí aparecerá el mensaje de ánimo, estrategia o consejo que el tutor escriba para ayudar al estudiante.</p>
                 </div>
 
                 <!-- Footer / Firma -->
@@ -240,6 +265,25 @@
     <script>
         let currentLevel = 'yellow';
 
+        // Inicializar fecha al cargar la página
+        window.onload = function() {
+            const dateEl = document.getElementById('out-date');
+            if(dateEl) {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                const today = new Date().toLocaleDateString('es-ES', options);
+                dateEl.innerText = today;
+            }
+        };
+
+        // Función para colocar el tip predefinido en el área de texto
+        function setPredefinedTip(value) {
+            const textarea = document.getElementById('in-tips');
+            if(value) {
+                textarea.value = value;
+                updatePreview('tips', value); // Actualizar la vista previa
+            }
+        }
+
         // Función para actualizar textos en tiempo real
         function updatePreview(field, value) {
             const el = document.getElementById(`out-${field}`);
@@ -251,7 +295,7 @@
                         'grade': '[Grado Seleccionado]',
                         'course': '[Curso Seleccionado]',
                         'lessons': '[Lecciones indicadas]',
-                        'tips': 'Aquí aparecerán las recomendaciones y consejos del tutor.',
+                        'tips': 'Aquí aparecerá el mensaje de ánimo, estrategia o consejo que el tutor escriba para ayudar al estudiante.',
                         'tutor': '[Nombre del Tutor]'
                     };
                     el.innerText = placeholders[field];
