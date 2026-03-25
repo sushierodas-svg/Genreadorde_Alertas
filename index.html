@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Alertas Académicas - Escolaris</title>
-    <!-- Tailwind CSS para los estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- html2canvas para convertir HTML a PNG -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Configuración de identidad visual -->
     <script>
         tailwind.config = {
             theme: {
@@ -31,25 +28,149 @@
         }
     </script>
     <style>
-        /* Estilos base para asegurar que la exportación sea limpia */
         body { background-color: #f3f4f6; }
-        .preview-container {
-            width: 650px;
-            min-width: 650px;
-        }
-        /* Ocultar barra de scroll en el preview si existiera */
+        .preview-container { width: 650px; min-width: 650px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Estilos para el selector multi-curso */
+        .course-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #244b5a;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 3px;
+        }
+        .course-tag button {
+            background: none;
+            border: none;
+            color: #f7be00;
+            cursor: pointer;
+            font-size: 15px;
+            line-height: 1;
+            padding: 0;
+        }
+        .course-tag button:hover { color: white; }
+
+        .course-row {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .course-row .course-name {
+            flex: 0 0 auto;
+            min-width: 200px;
+            font-weight: 700;
+            color: #244b5a;
+            font-size: 13px;
+        }
+        .course-row input {
+            flex: 1;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 13px;
+            outline: none;
+        }
+        .course-row input:focus { border-color: #db6015; box-shadow: 0 0 0 2px rgba(219,96,21,0.2); }
+        .course-row .remove-btn {
+            background: none;
+            border: none;
+            color: #993921;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            padding: 0 4px;
+            flex-shrink: 0;
+        }
+
+        /* Vista previa: tabla de cursos */
+        .preview-course-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .preview-course-table th {
+            background: #244b5a;
+            color: white;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 700;
+        }
+        .preview-course-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+        .preview-course-table tr:last-child td { border-bottom: none; }
+        .preview-course-table tr:nth-child(even) td { background: #f0f8ff; }
+
+        /* Dropdown de cursos */
+        .course-dropdown {
+            position: relative;
+        }
+        .course-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            z-index: 100;
+            max-height: 280px;
+            overflow-y: auto;
+            display: none;
+        }
+        .course-dropdown-menu.open { display: block; }
+        .course-dropdown-group {
+            padding: 6px 0 2px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding-left: 12px;
+            margin-top: 4px;
+        }
+        .course-dropdown-item {
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #244b5a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .course-dropdown-item:hover { background: #f0f8ff; }
+        .course-dropdown-item.selected { background: #e0f0ff; font-weight: 700; }
+        .course-dropdown-item input[type="checkbox"] {
+            accent-color: #db6015;
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body class="font-sans text-brand-blue min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8 justify-center items-start">
 
-    <!-- PANEL DE CONTROL (Formulario) -->
+    <!-- PANEL DE CONTROL -->
     <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md border-t-4 border-brand-orange">
         <h1 class="text-2xl font-bold mb-1 text-brand-blue">Generador de Alertas</h1>
         <p class="text-sm text-gray-500 mb-6">Completa los datos para generar la imagen.</p>
 
-        <!-- Selector de Tipo de Alerta -->
+        <!-- Tipo de Alerta -->
         <div class="flex gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
             <button id="btn-yellow" onclick="setAlertLevel('yellow')" class="flex-1 py-2 rounded-md font-bold transition-all bg-brand-yellow text-brand-blue shadow-sm">
                 🟡 Alerta Amarilla
@@ -88,59 +209,36 @@
                 </select>
             </div>
 
-            <!-- Curso -->
+            <!-- CURSOS MÚLTIPLES -->
             <div>
-                <label class="block text-sm font-bold mb-1">3. Curso</label>
-                <select id="in-course" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" onchange="updatePreview('course', this.value)">
-                    <option value="" disabled selected>Selecciona un curso...</option>
-                    <optgroup label="Área de Ciencias">
-                        <option value="Matemática">Matemática</option>
-                        <option value="Ciencias Naturales y Tecnología">Ciencias Naturales y Tecnología</option>
-                        <option value="Ciencias Naturales">Ciencias Naturales</option>
-                        <option value="Biología">Biología</option>
-                        <option value="Química">Química</option>
-                        <option value="Física">Física</option>
-                        <option value="Estadística">Estadística</option>
-                    </optgroup>
-                    <optgroup label="Área de Lenguaje e Idiomas">
-                        <option value="Comunicación y Lenguaje">Comunicación y Lenguaje</option>
-                        <option value="Lengua y Literatura">Lengua y Literatura</option>
-                        <option value="Idioma Inglés">Idioma Inglés</option>
-                        <option value="Idioma Maya">Idioma Maya</option>
-                    </optgroup>
-                    <optgroup label="Área Social y Humanística">
-                        <option value="Ciencias Sociales">Ciencias Sociales</option>
-                        <option value="Formación Ciudadana">Formación Ciudadana</option>
-                        <option value="Filosofía">Filosofía</option>
-                        <option value="Psicología">Psicología</option>
-                        <option value="Seminario">Seminario</option>
-                    </optgroup>
-                    <optgroup label="Área Técnica y Artística">
-                        <option value="Tecnologías de la Información / TAC">Tecnologías de la Información / TAC</option>
-                        <option value="Productividad y Desarrollo">Productividad y Desarrollo</option>
-                        <option value="Emprendimiento">Emprendimiento</option>
-                        <option value="Gestión de Proyectos">Gestión de Proyectos</option>
-                        <option value="Expresión Artística">Expresión Artística</option>
-                        <option value="Educación Física">Educación Física</option>
-                        <option value="Danza">Danza</option>
-                        <option value="Música">Música</option>
-                        <option value="Teatro">Teatro</option>
-                    </optgroup>
-                </select>
+                <label class="block text-sm font-bold mb-1">3. Cursos con atraso</label>
+                <p class="text-xs text-gray-500 mb-2">Selecciona uno o más cursos y escribe las lecciones con atraso de cada uno.</p>
+
+                <!-- Dropdown de selección -->
+                <div class="course-dropdown mb-3" id="courseDropdownWrapper">
+                    <button type="button" onclick="toggleDropdown()" class="w-full border border-gray-300 rounded-md p-2 text-left text-sm text-gray-600 bg-white flex justify-between items-center hover:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange">
+                        <span id="dropdownLabel">Haz clic para seleccionar cursos...</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="course-dropdown-menu" id="courseDropdownMenu">
+                        <!-- Generado por JS -->
+                    </div>
+                </div>
+
+                <!-- Tags de cursos seleccionados + campo de lecciones -->
+                <div id="selectedCoursesList" class="space-y-1">
+                    <!-- Se generan dinámicamente -->
+                </div>
+                <p id="noCoursesMsg" class="text-xs text-gray-400 italic text-center py-2">Aún no has seleccionado ningún curso.</p>
             </div>
 
-            <!-- Lecciones con atraso -->
+            <!-- Tips / Mensaje del Tutor -->
             <div>
-                <label class="block text-sm font-bold mb-1">4. Lecciones con atraso</label>
-                <input type="text" id="in-lessons" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. Lección 5 y 6" oninput="updatePreview('lessons', this.value)">
-            </div>
-
-            <!-- Tips / Mensajes de ánimo -->
-            <div>
-                <label class="block text-sm font-bold mb-1">5. Mensaje / Nota del Tutor</label>
-                <!-- Menú de opciones predefinidas -->
+                <label class="block text-sm font-bold mb-1">4. Mensaje / Nota del Tutor</label>
                 <select id="in-predefined-tips" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none mb-2 text-sm text-gray-700 bg-gray-50" onchange="setPredefinedTip(this.value)">
-                    <option value="" disabled selected>Elige un consejo, un mensaje de ánimo o escribe el tuyo...</option>
+                    <option value="" disabled selected>Elige un consejo o escribe el tuyo...</option>
                     <optgroup label="Mensajes de Ánimo">
                         <option value="¡No te desanimes! Sé que con un poco más de esfuerzo lograrás ponerte al día. Estoy aquí para apoyarte en tu proceso.">💪 Ánimo: ¡Tú puedes!</option>
                         <option value="Recuerda que cada pequeño paso cuenta. Organiza tu semana y verás cómo avanzas rápidamente. ¡Confío en tu capacidad!">🌟 Ánimo: Confío en ti</option>
@@ -157,13 +255,12 @@
                         <option value="Utiliza una agenda para no olvidar la entrega de tus tareas y programar el avance en tus cursos. Con el tiempo verás que es una excelente herramienta.">📅 Tip: Utilizar una agenda</option>
                     </optgroup>
                 </select>
-                <!-- Área de texto (editable) -->
                 <textarea id="in-tips" rows="3" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. ¡Hola! He notado que te has atrasado un poco, pero sé que puedes recuperarte..." oninput="updatePreview('tips', this.value)"></textarea>
             </div>
 
             <!-- Nombre del Tutor -->
             <div>
-                <label class="block text-sm font-bold mb-1">6. Nombre del Tutor</label>
+                <label class="block text-sm font-bold mb-1">5. Nombre del Tutor</label>
                 <input type="text" id="in-tutor" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-brand-orange outline-none" placeholder="Ej. Prof. María Rodríguez" oninput="updatePreview('tutor', this.value)">
             </div>
         </div>
@@ -180,55 +277,53 @@
     <div class="flex-col hidden md:flex" style="position: sticky; top: 2rem;">
         <h2 class="text-lg font-bold mb-2 text-gray-600">Vista Previa</h2>
         
-        <!-- Contenedor exacto que se capturará como imagen -->
         <div id="capture-area" class="preview-container bg-brand-light rounded-2xl overflow-hidden shadow-xl border border-gray-200 relative">
             
-            <!-- Banner Superior (Cambia de color según la alerta) -->
+            <!-- Banner Superior -->
             <div id="alert-header" class="bg-brand-yellow px-8 py-6 flex items-center justify-between transition-colors duration-300">
                 <div>
                     <h2 class="text-sm font-bold tracking-widest uppercase mb-1" id="alert-subtitle" style="color: rgba(0,0,0,0.6)">Aviso Importante</h2>
                     <h1 class="text-3xl font-bold text-brand-blue" id="alert-title">Alerta Preventiva</h1>
                 </div>
-                <div class="text-5xl drop-shadow-sm transition-transform duration-300" id="alert-emoji">
-                    ⚠️
-                </div>
+                <div class="text-5xl drop-shadow-sm transition-transform duration-300" id="alert-emoji">⚠️</div>
             </div>
 
-            <!-- Cuerpo del mensaje -->
+            <!-- Cuerpo -->
             <div class="p-8 relative z-0">
-                <!-- Fecha de generación automática -->
                 <div class="text-right mb-2">
                     <span class="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full" id="out-date">Fecha actual</span>
                 </div>
 
-                <div>
-                    <p class="text-xl text-brand-blue mb-4">Hola <strong id="out-student">[Nombre del Estudiante]</strong>,</p>
-                    
-                    <p class="text-base text-gray-700 mb-6 leading-relaxed">
-                        En Escolaris nos preocupamos por tu aprendizaje y queremos que alcances tus metas. Hemos notado un atraso en tu avance académico y queremos apoyarte.
-                    </p>
+                <p class="text-xl text-brand-blue mb-4">Hola <strong id="out-student">[Nombre del Estudiante]</strong>,</p>
+                <p class="text-base text-gray-700 mb-6 leading-relaxed">
+                    En Escolaris nos preocupamos por tu aprendizaje y queremos que alcances tus metas. Hemos notado un atraso en tu avance académico y queremos apoyarte.
+                </p>
+
+                <!-- Datos generales -->
+                <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-brand-orange mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-brand-blue w-20 shrink-0">Grado:</span>
+                        <span class="text-gray-800 font-semibold text-base" id="out-grade">[Grado Seleccionado]</span>
+                    </div>
                 </div>
 
-                <!-- Caja de Detalles -->
-                <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-brand-orange mb-6 flex flex-col gap-3">
-                    <div class="flex items-start">
-                        <span class="font-bold text-brand-blue w-24 shrink-0">Grado:</span>
-                        <span class="text-gray-800 font-semibold text-lg" id="out-grade">[Grado Seleccionado]</span>
+                <!-- TABLA DE CURSOS MÚLTIPLES -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-sm mb-4" id="courses-table-wrapper">
+                    <div class="bg-brand-blue px-4 py-2 flex items-center gap-2">
+                        <span class="text-white font-bold text-sm">📚 Cursos con atraso</span>
                     </div>
-                    <div class="flex items-start">
-                        <span class="font-bold text-brand-blue w-24 shrink-0">Curso:</span>
-                        <span class="text-gray-800 font-semibold text-lg" id="out-course">[Curso Seleccionado]</span>
+                    <div id="out-courses-table">
+                        <!-- placeholder -->
+                        <div class="px-4 py-4 text-sm text-gray-400 italic text-center" id="courses-placeholder">
+                            Los cursos y lecciones con atraso aparecerán aquí.
+                        </div>
                     </div>
-                    <div class="flex items-start">
-                        <span class="font-bold text-brand-blue w-48 shrink-0">Atraso en las lecciones:</span>
-                        <span class="text-brand-red font-bold" id="out-lessons">[Lecciones indicadas]</span>
-                    </div>
-                    <div class="mt-2 p-3 bg-orange-50 rounded-lg" id="alert-message">
+                    <div class="px-4 py-3 bg-orange-50" id="alert-message">
                         <p class="text-brand-orange font-semibold m-0 text-sm">💡 Aún estás a tiempo de ponerte al día. ¡Tú puedes lograrlo, organiza tu tiempo!</p>
                     </div>
                 </div>
 
-                <!-- Caja de Tips / Mensaje -->
+                <!-- Mensaje del tutor -->
                 <div class="bg-white rounded-xl p-5 shadow-sm mb-6">
                     <h3 class="font-bold text-brand-blue mb-2 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-yellow" viewBox="0 0 20 20" fill="currentColor">
@@ -241,9 +336,7 @@
 
                 <!-- Footer / Firma -->
                 <div class="flex items-center gap-4 mt-8 pt-4 border-t border-gray-200">
-                    <div class="w-12 h-12 bg-brand-blue rounded-full flex items-center justify-center text-white font-bold text-xl">
-                        E
-                    </div>
+                    <div class="w-12 h-12 bg-brand-blue rounded-full flex items-center justify-center text-white font-bold text-xl">E</div>
                     <div>
                         <p class="font-bold text-brand-blue" id="out-tutor">[Nombre del Tutor]</p>
                         <p class="text-sm text-gray-500">Tutor(a) Académico - Escolaris</p>
@@ -251,7 +344,7 @@
                 </div>
             </div>
             
-            <!-- Pie de color de marca -->
+            <!-- Pie de marca -->
             <div class="h-3 w-full flex">
                 <div class="h-full flex-1 bg-brand-blue"></div>
                 <div class="h-full flex-1 bg-brand-orange"></div>
@@ -261,54 +354,184 @@
         </div>
     </div>
 
-    <!-- Scripts de interactividad -->
+    <!-- Área oculta para captura PNG (evita corte de texto) -->
+    <div id="hiddenCapture" style="position:absolute;left:-9999px;top:0;"></div>
+
     <script>
         let currentLevel = 'yellow';
 
-        // Inicializar fecha al cargar la página
+        // Catálogo de cursos
+        const courseGroups = [
+            {
+                group: "Área de Ciencias",
+                courses: ["Matemática","Ciencias Naturales y Tecnología","Ciencias Naturales","Biología","Química","Física","Estadística"]
+            },
+            {
+                group: "Área de Lenguaje e Idiomas",
+                courses: ["Comunicación y Lenguaje","Lengua y Literatura","Idioma Inglés","Idioma Maya"]
+            },
+            {
+                group: "Área Social y Humanística",
+                courses: ["Ciencias Sociales","Formación Ciudadana","Filosofía","Psicología","Seminario"]
+            },
+            {
+                group: "Área Técnica y Artística",
+                courses: ["Tecnologías de la Información / TAC","Productividad y Desarrollo","Emprendimiento","Gestión de Proyectos","Expresión Artística","Educación Física","Danza","Música","Teatro"]
+            }
+        ];
+
+        // Mapa: nombre_curso → lecciones (se llena cuando el usuario escribe)
+        let selectedCourses = {}; // { "Matemática": "Lección 5 y 6", ... }
+
         window.onload = function() {
+            buildDropdown();
             const dateEl = document.getElementById('out-date');
             if(dateEl) {
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                const today = new Date().toLocaleDateString('es-ES', options);
+                const today = new Date().toLocaleDateString('es-ES', { year:'numeric', month:'long', day:'numeric' });
                 dateEl.innerText = today;
             }
+            document.addEventListener('click', function(e) {
+                if (!document.getElementById('courseDropdownWrapper').contains(e.target)) {
+                    document.getElementById('courseDropdownMenu').classList.remove('open');
+                }
+            });
         };
 
-        // Función para colocar el tip predefinido en el área de texto
-        function setPredefinedTip(value) {
-            const textarea = document.getElementById('in-tips');
-            if(value) {
-                textarea.value = value;
-                updatePreview('tips', value); // Actualizar la vista previa
+        function buildDropdown() {
+            const menu = document.getElementById('courseDropdownMenu');
+            menu.innerHTML = '';
+            courseGroups.forEach(g => {
+                const groupLabel = document.createElement('div');
+                groupLabel.className = 'course-dropdown-group';
+                groupLabel.textContent = g.group;
+                menu.appendChild(groupLabel);
+
+                g.courses.forEach(c => {
+                    const item = document.createElement('label');
+                    item.className = 'course-dropdown-item ' + (selectedCourses.hasOwnProperty(c) ? 'selected' : '');
+                    item.innerHTML = `<input type="checkbox" ${selectedCourses.hasOwnProperty(c) ? 'checked' : ''} onchange="toggleCourse('${c.replace(/'/g,"\\'")}', this.checked)"> ${c}`;
+                    menu.appendChild(item);
+                });
+            });
+        }
+
+        function toggleDropdown() {
+            document.getElementById('courseDropdownMenu').classList.toggle('open');
+        }
+
+        function toggleCourse(courseName, checked) {
+            if (checked) {
+                if (!selectedCourses.hasOwnProperty(courseName)) {
+                    selectedCourses[courseName] = '';
+                }
+            } else {
+                delete selectedCourses[courseName];
+            }
+            buildDropdown();
+            renderSelectedCoursesList();
+            renderCoursePreviewTable();
+            updateDropdownLabel();
+        }
+
+        function updateDropdownLabel() {
+            const count = Object.keys(selectedCourses).length;
+            const label = document.getElementById('dropdownLabel');
+            if (count === 0) {
+                label.textContent = 'Haz clic para seleccionar cursos...';
+            } else {
+                label.textContent = `${count} curso${count > 1 ? 's' : ''} seleccionado${count > 1 ? 's' : ''}`;
+                label.style.color = '#244b5a';
+                label.style.fontWeight = '600';
             }
         }
 
-        // Función para actualizar textos en tiempo real
+        function renderSelectedCoursesList() {
+            const container = document.getElementById('selectedCoursesList');
+            const noMsg = document.getElementById('noCoursesMsg');
+            const courses = Object.keys(selectedCourses);
+
+            container.innerHTML = '';
+
+            if (courses.length === 0) {
+                noMsg.style.display = '';
+                return;
+            }
+            noMsg.style.display = 'none';
+
+            courses.forEach(c => {
+                const row = document.createElement('div');
+                row.className = 'course-row';
+                row.innerHTML = `
+                    <span class="course-name">${c}</span>
+                    <input type="text"
+                        value="${selectedCourses[c]}"
+                        placeholder="Ej. Lección 3 y 4"
+                        oninput="updateLessons('${c.replace(/'/g,"\\'")}', this.value)">
+                    <button class="remove-btn" onclick="toggleCourse('${c.replace(/'/g,"\\'")}', false)" title="Quitar curso">✕</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function updateLessons(courseName, value) {
+            if (selectedCourses.hasOwnProperty(courseName)) {
+                selectedCourses[courseName] = value;
+                renderCoursePreviewTable();
+            }
+        }
+
+        function renderCoursePreviewTable() {
+            const wrapper = document.getElementById('out-courses-table');
+            const placeholder = document.getElementById('courses-placeholder');
+            const courses = Object.keys(selectedCourses);
+
+            if (courses.length === 0) {
+                wrapper.innerHTML = `<div class="px-4 py-4 text-sm text-gray-400 italic text-center" id="courses-placeholder">Los cursos y lecciones con atraso aparecerán aquí.</div>`;
+                return;
+            }
+
+            let rows = courses.map((c, i) => {
+                const lessons = selectedCourses[c] || '<span style="color:#9ca3af;font-style:italic">—</span>';
+                const bg = i % 2 === 1 ? 'background:#f0f8ff;' : '';
+                return `<tr>
+                    <td style="padding:9px 14px;border-bottom:1px solid #e5e7eb;${bg}font-weight:700;color:#244b5a;font-size:13px;">${c}</td>
+                    <td style="padding:9px 14px;border-bottom:1px solid #e5e7eb;${bg}color:#993921;font-weight:600;font-size:13px;">${selectedCourses[c] ? selectedCourses[c] : '<span style="color:#9ca3af;font-style:italic">Sin especificar</span>'}</td>
+                </tr>`;
+            }).join('');
+
+            wrapper.innerHTML = `
+                <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                    <thead>
+                        <tr>
+                            <th style="background:#eef4f6;color:#244b5a;padding:8px 14px;text-align:left;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Curso</th>
+                            <th style="background:#eef4f6;color:#244b5a;padding:8px 14px;text-align:left;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Atraso en lecciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        function setPredefinedTip(value) {
+            const textarea = document.getElementById('in-tips');
+            if(value) { textarea.value = value; updatePreview('tips', value); }
+        }
+
         function updatePreview(field, value) {
             const el = document.getElementById(`out-${field}`);
             if(el) {
-                // Si está vacío, mostramos un placeholder
-                if(value.trim() === '') {
-                    const placeholders = {
-                        'student': '[Nombre del Estudiante]',
-                        'grade': '[Grado Seleccionado]',
-                        'course': '[Curso Seleccionado]',
-                        'lessons': '[Lecciones indicadas]',
-                        'tips': 'Aquí aparecerá el mensaje de ánimo, estrategia o consejo que el tutor escriba para ayudar al estudiante.',
-                        'tutor': '[Nombre del Tutor]'
-                    };
-                    el.innerText = placeholders[field];
-                } else {
-                    el.innerText = value;
-                }
+                const placeholders = {
+                    'student': '[Nombre del Estudiante]',
+                    'grade': '[Grado Seleccionado]',
+                    'tips': 'Aquí aparecerá el mensaje de ánimo, estrategia o consejo que el tutor escriba para ayudar al estudiante.',
+                    'tutor': '[Nombre del Tutor]'
+                };
+                el.innerText = value.trim() === '' ? (placeholders[field] || '') : value;
             }
         }
 
-        // Función para cambiar de Amarilla a Roja y viceversa
         function setAlertLevel(level) {
             currentLevel = level;
-            
             const btnYellow = document.getElementById('btn-yellow');
             const btnRed = document.getElementById('btn-red');
             const alertHeader = document.getElementById('alert-header');
@@ -318,55 +541,43 @@
             const alertEmoji = document.getElementById('alert-emoji');
 
             if (level === 'yellow') {
-                // Estilos Botones
                 btnYellow.className = "flex-1 py-2 rounded-md font-bold transition-all bg-brand-yellow text-brand-blue shadow-sm";
                 btnRed.className = "flex-1 py-2 rounded-md font-bold transition-all text-gray-500 hover:bg-gray-200";
-                
-                // Estilos Preview
                 alertHeader.className = "bg-brand-yellow px-8 py-6 flex items-center justify-between transition-colors duration-300";
                 alertTitle.innerText = "Alerta Preventiva";
-                alertTitle.style.color = "#244b5a"; // brand-blue
+                alertTitle.style.color = "#244b5a";
                 alertSubtitle.style.color = "rgba(0,0,0,0.6)";
                 alertEmoji.innerText = '⚠️';
-                
-                alertMessage.className = "mt-2 p-3 bg-orange-50 rounded-lg";
+                alertMessage.className = "px-4 py-3 bg-orange-50";
                 alertMessage.innerHTML = '<p class="text-brand-orange font-semibold m-0 text-sm">💡 Aún estás a tiempo de ponerte al día. ¡Tú puedes lograrlo, organiza tu tiempo!</p>';
-
             } else {
-                // Estilos Botones
                 btnRed.className = "flex-1 py-2 rounded-md font-bold transition-all bg-brand-red text-white shadow-sm";
                 btnYellow.className = "flex-1 py-2 rounded-md font-bold transition-all text-gray-500 hover:bg-gray-200";
-                
-                // Estilos Preview
                 alertHeader.className = "bg-brand-red px-8 py-6 flex items-center justify-between transition-colors duration-300";
                 alertTitle.innerText = "Alerta de Riesgo";
                 alertTitle.style.color = "#ffffff";
                 alertSubtitle.style.color = "rgba(255,255,255,0.8)";
                 alertEmoji.innerText = '🚨';
-                
-                alertMessage.className = "mt-2 p-3 bg-red-50 border border-brand-red rounded-lg";
+                alertMessage.className = "px-4 py-3 bg-red-50 border-t border-red-200";
                 alertMessage.innerHTML = '<p class="text-brand-red font-bold m-0 text-sm">⚠️ Es urgente que te pongas al día. Te encuentras en riesgo de perder el curso. ¡Actúa ahora!</p>';
             }
         }
 
-        // Función para descargar la imagen
         function downloadImage() {
             const captureArea = document.getElementById('capture-area');
             const studentName = document.getElementById('in-student').value.trim() || 'Estudiante';
-            
-            // Usamos html2canvas
+
             html2canvas(captureArea, {
-                scale: 2, // Alta resolución
-                useCORS: true, // Permite cargar imágenes si hay cruce de dominios
-                backgroundColor: null // Mantiene esquinas redondeadas si las hubiera
+                scale: 2,
+                useCORS: true,
+                backgroundColor: null
             }).then(canvas => {
-                // Crear un enlace temporal
                 const link = document.createElement('a');
                 link.download = `Alerta_${currentLevel === 'red' ? 'Roja' : 'Amarilla'}_${studentName.replace(/\s+/g, '_')}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             }).catch(err => {
-                alert("Hubo un error al generar la imagen. Asegúrate de que la imagen de la mascota se haya cargado correctamente.");
+                alert("Hubo un error al generar la imagen.");
                 console.error(err);
             });
         }
